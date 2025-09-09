@@ -87,7 +87,7 @@ Agora vamos criar um **Instance Pool** baseado na configuração criada.
 
 Para adicionar instâncias existentes ao pool:
 
-- No momento ão tem nenhuma instância anexada, iremos anexar as instâncias que desejamos que faça parte do Start e Stop do agendamento.
+- No momento não tem nenhuma instância anexada, iremos anexar as instâncias que desejamos que faça parte do Start e Stop do agendamento.
   
 1. No seu Instance Pool, vá para a seção **Attached instances**
 2. Clique em **Attach instance**
@@ -115,16 +115,19 @@ Para adicionar instâncias existentes ao pool:
 ### Criando Autoscaling Configuration
 
 1. Acesse: `☰ Menu → Compute → Autoscaling Configurations`
-2. Clique em **Create autoscaling configuration**
 
-![Autoscaling Menu](./prints/autoscaling-menu.png)
+![Autoscaling Menu](./photos/compute-autoscallingconfiguration.png)
+
+3. Clique em **Create autoscaling configuration**
+
+![Autoscaling Menu](./photos/create-autoscalling-configuration.png)
 
 3. Configure os detalhes básicos:
    - **Name**: `autoscaling-config-start-stop`
    - **Compartment**: Selecione o compartment
    - **Instance pool**: Selecione `instance-pool-start-stop`
 
-![Autoscaling Basic](./prints/autoscaling-basic.png)
+![Autoscaling Basic](./photos/create-autoscalling-configuration-add-basic-details.png)
 
 ### Configurando Política de Stop (Desligamento)
 
@@ -145,7 +148,7 @@ Day of week: ?
 Year: 2025
 ```
 
-![Stop Policy](./prints/stop-policy.png)
+![Stop Policy](./photos/compute-autoscalling-configuration-policy.png)
 
 ### Configurando Política de Start (Ligamento)
 
@@ -166,7 +169,7 @@ Day of week: ?
 Year: 2025
 ```
 
-![Start Policy](./prints/start-policy.png)
+![Start Policy](./photos/compute-autoscalling-configuration-policy-2.png)
 
 ### Configuração Final do Autoscaling
 
@@ -176,7 +179,7 @@ Após configurar ambas as políticas, você terá:
 - ✅ Política de start agendada  
 - ✅ Próximos eventos visíveis no painel
 
-![Final Config](./prints/final-config.png)
+![Final Config](./photos/autoscalling-preview.png)
 
 ---
 
@@ -197,6 +200,87 @@ Após configurar ambas as políticas, você terá:
 
 ---
 
+## 📋 Entendendo Expressões Cron
+
+As expressões cron na OCI usam o formato:
+`<segundo> <minuto> <hora> <dia do mês> <mês> <dia da semana> <ano>`
+
+### 📊 Campos da Expressão Cron
+
+| Campo | Valores Permitidos | Descrição |
+|-------|-------------------|-----------|
+| Segundo | 0 | **Obrigatório:** Sempre use 0 na OCI |
+| Minuto | 0-59 | Minutos da hora |
+| Hora | 0-23 | Hora do dia (formato 24h) |
+| Dia do mês | 1-31 | Dias do mês |
+| Mês | 1-12 ou JAN-DEC | Meses do ano |
+| Dia da semana | 1-7 ou SUN-SAT | 1=Domingo, 7=Sábado |
+| Ano | 1970-2099 | Ano (opcional) |
+
+### 🔧 Caracteres Especiais
+
+| Caractere | Descrição | Exemplo |
+|-----------|-----------|---------|
+| `*` | Todos os valores | `*` no mês = todos os meses |
+| `-` | Intervalo de valores | `8-17` na hora = 8h às 17h |
+| `,` | Múltiplos valores | `MON,WED,FRI` = segunda, quarta, sexta |
+| `?` | Valor não específico | Use quando um campo interfere em outro |
+| `/` | Incrementos | `0/15` nos minutos = a cada 15 minutos |
+| `L` | Último dia | `L` = último dia do mês |
+| `W` | Dia útil mais próximo | `15W` = dia útil mais próximo do dia 15 |
+| `#` | Enésima ocorrência | `MON#2` = segunda segunda-feira do mês |
+
+### ⏰ Exemplos Práticos
+
+**🟢 Todos os dias às 9h30:**
+```
+0 30 9 * * ? *
+```
+
+**🟢 Dias úteis (segunda a sexta) às 8h:**
+```
+0 0 8 ? * MON-FRI *
+```
+
+**🟢 Final de semana (sábado e domingo) às 10h:**
+```
+0 0 10 ? * SAT,SUN *
+```
+
+**🟢 Primeira segunda-feira do mês às 9h:**
+```
+0 0 9 ? * 2#1 *
+```
+
+**🟢 Todo dia 15 do mês às 18h:**
+```
+0 0 18 15 * ? *
+```
+
+**🟢 A cada 30 minutos, das 8h às 18h:**
+```
+0 0/30 8-18 * * ? *
+```
+
+**🟢 Horário comercial (segunda a sexta, 8h às 18h):**
+```
+// Início: 8h nos dias úteis
+0 0 8 ? * MON-FRI *
+
+// Término: 18h nos dias úteis  
+0 0 18 ? * MON-FRI *
+```
+
+### 💡 Dicas Importantes
+
+1. **UTC**: Todos os horários são em UTC (converta seu fuso horário)
+2. **Segundo**: Sempre use `0` no primeiro campo
+3. **Conflitos**: Use `?` quando houver conflito entre dia do mês e dia da semana
+4. **Teste**: Sempre verifique o "Next event" para confirmar o agendamento
+5. **Formato**: `0 <minuto> <hora> ? * <dias-da-semana> *`
+
+---
+
 ## ⚠️ Considerações Importantes
 
 1. **Custos**: Instâncias em pool paradas ainda incorrem em custos de armazenamento
@@ -206,22 +290,10 @@ Após configurar ambas as políticas, você terá:
 5. **Compatibilidade**: Instâncias devem ser do mesmo tipo (VM/bare metal)
 
 ---
-
-## 🎯 Conclusão
-
-Com esta configuração completa, você terá:
-
-- ✅ Instance Pool configurado com instâncias anexadas
-- ✅ Políticas de auto scaling para start/stop automático
-- ✅ Controle total sobre quando as instâncias ligam/desligam
-- ✅ Economia de custos com desligamento programado
-- ✅ Facilidade de gerenciamento através do console OCI
-
----
 ## 👨‍💻 Autor
 
 **Alan Nunes**  
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/saln-sn/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/alan-sn/)
 
 ---
 
