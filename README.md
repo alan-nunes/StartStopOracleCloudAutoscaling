@@ -217,4 +217,16 @@ Com esta configuração completa, você terá:
 - ✅ Economia de custos com desligamento programado
 - ✅ Facilidade de gerenciamento através do console OCI
 
-Agora suas instâncias serão automaticamente ligadas e desligadas conforme o agendamento configurado! 🚀
+---
+## 👨‍💻 Autor
+
+**Alan Nunes**  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/saln-sn/)
+
+---
+
+## 📚 Referências
+
+- [Oracle Cloud Documentation - Autoscaling with Cron Expressions](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/autoscalinginstancepools.htm#cron)
+- [Start/Stop Instances usando o Autoscaling do OCI - Welton Medici](https://weltonmedici.com.br/start-stop-instances-usando-o-autoscaling-do-oci/)
+
